@@ -12,4 +12,4 @@
 9. Goal is to produce 3 files:
   1. gamma.csv (column 1 is number from 0 to 255, column 2 is that number converted to float by dividing by 255.0, column 3 is uncompressed version)
   2. primaries.csv (row 1 is labels, row 2 is R primary, row 3 is G primary, row 4 is B primary, row 5 is spectrum of white)
-  3. matrices.csv (TODO)
+  3. matrices.csv (First 4 rows are RGB to XYZ matrix, next 4 are XYZ to RGB)
