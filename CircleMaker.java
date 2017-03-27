@@ -3,7 +3,7 @@
 * a collection of circles which fill a larger circle. The location and radii
 * of the circles are chosen randomly, though no two circles touch. 
 * 
-* @author Bo Brinkman
+* @author Bo Brinkman and Caroline Danzi
 * @version 2017-03-11
 */
 
@@ -12,14 +12,22 @@ import java.util.ArrayList;
 public class CircleMaker {
     static final int maxN = 10000;
     static int n = 0;
-    static final double[] x = new double[maxN];
-    static final double[] y = new double[maxN];
-    static final double[] r = new double[maxN];
     static final double minR = 1/80.0;
     static final double maxR = 1/20.0;
     static final double fillArea = Math.PI;
     static double area = 0.0;
     static final double targetRatio = 0.7;
+	/* The bucket size should be maxR*2, so that any circle that falls within that bucket 
+	* will only have to be checked against the immediately surrounding buckets, since
+	* it could not overlap with circles outside those buckets. For example, if a circle
+	* falls in bucket 4 (below), we would need to check buckets 0,1,2,3,4,5,6,7,8 
+	*  | 0 | 1 | 2 |
+	*  | 3 | 4 | 5 |
+	*  | 6 | 7 | 8 |	
+	*/
+	static final double bucketSize = 2*maxR;
+	static final int rows = (int)(Math.ceil(2/(bucketSize)));
+	static final int totalBuckets = rows * rows;
 
 	/**
 	* Create an ArrayList of Circle objects that randomly fill a larger circle. No two
@@ -29,42 +37,69 @@ public class CircleMaker {
 	* @return an ArrayList of Circle objects
 	*/
     public static ArrayList<Circle> makeCircles() {
-		n = 0;
-		area = 0.0;
+		
+		// Create an ArrayList to hold all the buckets, which are just ArrayLists of Circles
+		ArrayList<ArrayList<Circle>> buckets = new ArrayList<ArrayList<Circle>>(totalBuckets);
+		for(int i = 0; i < totalBuckets; i++) {
+			buckets.add(new ArrayList<Circle>());
+		}
 
 		// Continue generating circles until we either draw the max number
 		// of circles or until the area of how much we have filled is greater
 		// than our target ratio
-		while (area/fillArea < targetRatio && n < maxN) {
-			// Select a random point inside the window and 
-			// a random radius size that is within the range [minR, maxR) 
-			x[n] = -1.0 + 2.0*Math.random();
-			y[n] = -1.0 + 2.0*Math.random();
-			r[n] = minR + (maxR-minR)*Math.random();
-
-			// Go through each existing circle - if the new circle overlaps
-			// any of them, decrease its radius by the distance they overlap
-			for (int i=0; i < n; i++) {
-				double d = Math.sqrt((x[n]-x[i])*(x[n]-x[i]) +
-					(y[n]-y[i])*(y[n]-y[i]));
-				if (d < r[n]+r[i]) r[n] = d - r[i];
-			}
-
-			// If the radius is greater than the minimum radius and
-			// the circle is actually inside the larger circle we are filling,
-			// move on to the next circle. Otherwise, try again. 
-			double d = Math.sqrt(x[n]*x[n] + y[n]*y[n]) + Math.abs(r[n]);
-			if (r[n] >= minR && d <= 1.0) {
-				area += Math.PI*r[n]*r[n];
+		while (area/fillArea < targetRatio && n < maxN) {			
+			// Select a random (x,y) offset and radius 
+			// Note: the true (x,y) coordinates will be -1.0 + the offset 
+			double xOffset = 2.0 * Math.random();
+			double yOffset = 2.0 * Math.random();
+			double radius = minR + (maxR-minR)*Math.random();
+			double x = -1.0 + xOffset;
+			double y = -1.0 + yOffset;
+			
+			// Determine the row and column of the bucket
+			// this circle falls into
+			int col = (int)(xOffset / (bucketSize));
+			int row = (int)(yOffset / (bucketSize));
+			
+			// Go through the surrounding buckets and check to make sure
+			// the new Circle does not overlap any of the existing circles
+			int bucket, dy, dx;
+			for(dy = -1; dy <= 1; dy++) {
+				// If it is not a valid row, go to the next one
+				if(row + dy < 0 || row + dy >= rows) { continue; }
+				
+				for(dx = -1; dx <= 1; dx++) {
+					// If it is not a valid column, go to the next one
+					if(col + dx < 0 || col + dx >= rows) { continue; }
+					
+					// Determine the bucket number and check all Circles in that
+					// bucket. If the new Circle overlaps, decrease its radius
+					// by the distance they overlap 
+					bucket = (col + dx)+ (row + dy)*rows;
+					for(Circle c : buckets.get(bucket)) {
+						// Check for overlap
+						double d = Math.sqrt((x-c.x)*(x-c.x) + (y-c.y)*(y-c.y));
+						if(d < radius + c.r) {
+							radius = d - c.r;
+						}
+					}
+				}				
+			}			
+			// Add circle to correct bucket if radius > minR and it is still in the larger circle
+			double d = Math.sqrt(x*x + y*y) + Math.abs(radius);
+			if(radius >= minR && d <= 1.0) {
+				area += Math.PI*radius*radius;
 				n++;
+				buckets.get(col + row*rows).add(new Circle(x, y, radius));
 			}
 		}
-
-		// Build Circle objects using the xy-coordinate data and radii 
-		// and put each Circle object in the ArrayList
+		
+		// Put all the Circles into one ArrayList and return 
 		ArrayList<Circle> ret = new ArrayList<Circle>();
-		for (int i=0; i < n; i++) {
-			ret.add(new Circle(x[i], y[i], r[i]));
+		for(ArrayList<Circle> a : buckets) {
+			for(Circle c : a) {
+				ret.add(c);
+			}
 		}
 		return ret;
 	}
