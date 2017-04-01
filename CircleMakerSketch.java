@@ -37,6 +37,9 @@ public class CircleMakerSketch extends PApplet {
 	* Sets up the sketch by drawing 
 	*/
     public void setup() {
+		// Note: This size will set the size of the sketch 
+		size(512, 512);
+		
 		// Set background color to black
 		background(0);
 
@@ -51,12 +54,12 @@ public class CircleMakerSketch extends PApplet {
 		noStroke();
 		ellipseMode(CENTER);
 		
-		// For each circle in the ArrayList, 
+		/* For each circle in the ArrayList, calculate the distance between the center
+		*  of the circle and the origin. The main large circle will be split into three rings. 
+		*  The two outer rings will be filled with circles that are lighter gray than the middle ring.
+		*/
 		for (int i=0; i < circles.size(); i++) {
-			// Calculate the distance between the center
-			// of the circle and the origin. The main large circle will
-			// be split into three rings - the two outer rings will be
-			// filled with circles that are lighter gray than the middle ring
+
 			double d = Math.sqrt(circles.get(i).x*circles.get(i).x
 						+circles.get(i).y*circles.get(i).y);
 			if (d > 2/3.0 || d < 1/3.0) {
