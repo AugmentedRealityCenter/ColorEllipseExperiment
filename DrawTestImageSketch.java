@@ -28,9 +28,6 @@ public class DrawTestImageSketch extends PApplet{
 	* Sets up the image to display 
 	*/ 
 	public void setup() {
-		// TODO: Move setting the size of the image into DrawTestImage 
-		size(512, 512);
-		
 		// Create two arrays of different colors 
 		center = new int[5];
 		test = new int[5];
@@ -50,7 +47,7 @@ public class DrawTestImageSketch extends PApplet{
 		
 		// Make a new test image and draw it for this applet using the two color arrays 
 		DrawTestImage dti = new DrawTestImage(this);
-		dti.drawTestImage(circles, center, test, DrawTestImage.Direction.UP, 2.4, 0, 0, 0, 0);
+		dti.drawTestImage(circles, center, test, DrawTestImage.Direction.RIGHT, 2.4, 1366, 0, 0.3048, 0);
 	}
 	
 	/**

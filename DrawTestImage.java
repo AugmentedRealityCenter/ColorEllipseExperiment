@@ -18,6 +18,8 @@ public class DrawTestImage {
 		UP, DOWN, LEFT, RIGHT
 	}
 	
+	private final double RADIANS_PER_DEGREE = 0.0174533;
+	
 	/**
 	* Constructor for use with PApplet
 	* @param p the PApplet for displaying the image
@@ -44,16 +46,42 @@ public class DrawTestImage {
 	* @param mHeight The height of the screen in meters 
 	*/
 	public void drawTestImage(ArrayList<Circle> circles, int[] center, int[] test, Direction dir, double distFromScreen, int pixWidth, int pixHeight, double mWidth, double mHeight) {		
+		// To find the width of the image, we use a 2 degree field of view 
+		// Width in meters: distance observer is from the screen * tan(1 degree) 
+		int pixelsInOneDegree = (int)(distFromScreen*Math.tan(RADIANS_PER_DEGREE)*pixWidth/mWidth);
+		int imgWidthInPixels = 2*pixelsInOneDegree; 
+		parent.size(imgWidthInPixels, imgWidthInPixels);
+		
 		// Set background color to black
 		parent.background(0);
 
-		parent.scale(parent.width/2);
 		// Puts the origin at the center of the window rather than
 		// the upper-left corner
+		parent.scale(parent.width/2);
 		parent.translate(1, 1);
-		// No line
+		
+		// No line, and set ellipses to draw using coordinates for the center
 		parent.noStroke();
 		parent.ellipseMode(parent.CENTER);
+		
+		// Use the direction the C opens to figure out the coordinate constraints
+		// for the cut, keeping in mind that the cut will be 1/5 of a degree
+		double xMin, xMax, yMin, yMax; 
+		switch(dir) {
+			case UP: xMin = -1/5.0; xMax = 1/5.0; yMin = 1/5.0; yMax = 1; 
+			break;
+			
+			case DOWN: xMin = -1/5.0; xMax = 1/5.0; yMin = -1; yMax = -1/5.0;
+			break;
+			
+			case LEFT: xMin = -1; xMax = -1/5.0; yMin = -1/5.0; yMax = 1/5.0;
+			break;
+			
+			case RIGHT: xMin = 1/5.0; xMax = 1; yMin = -1/5.0; yMax = 1/5.0; 
+			break;
+			
+			default: xMin = 0; xMax = 0; yMin = 0; yMax = 0;
+		}
 		
 		// For each circle, calculate its distance from the center of the image
 		// to determine which color to use. The center ring in the image will be
@@ -62,9 +90,15 @@ public class DrawTestImage {
 		for(Circle c : circles) {
 			double d = Math.sqrt(c.x*c.x + c.y*c.y);
 			int index;
-			if (d > 2/3.0 || d < 1/3.0) {
+			// Inner and outer rings should be the center color
+			if (d > 3/5.0 || d < 1/5.0) {
 				index = (int)(Math.random()*center.length);
 				parent.fill(center[index]);
+			// The cut of the C should be the center color
+			} else if(c.x >= xMin && c.x <= xMax && c.y >= yMin && c.y <= yMax) {
+				index = (int)(Math.random()*center.length);
+				parent.fill(center[index]);
+			// The actual circle should be the test color 
 			} else {
 				index = (int)(Math.random()*test.length);
 				parent.fill(test[index]);
