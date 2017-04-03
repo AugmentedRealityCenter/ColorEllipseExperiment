@@ -19,6 +19,7 @@ public class DrawTestImage {
 	}
 	
 	private final double RADIANS_PER_DEGREE = 0.0174533;
+	private final double CUT_SIZE = 1/6.0;
 	
 	/**
 	* Constructor for use with PApplet
@@ -32,7 +33,7 @@ public class DrawTestImage {
 	* Takes in a list of circles, a list of center colors, a list of test colors, a direction for the opening in the C,
 	* the distance the observer is from the screen, and the dimensions of the screen in pixels and meters. 
 	* Draws a circle made of smaller circles, with a C made of different colored circles. 
-	* The cut of the C can face up, down, left, or right and is 1/3 of a degree when viewed at the 
+	* The cut of the C can face up, down, left, or right and is 1/6 of a degree when viewed at the 
 	* specified distance. The overall image is 2 degrees wide when viewed at the specified distance. 
 	* 
 	* @param circles An ArrayList of Circle objects that gives the location and dimension of all circles in the image
@@ -65,19 +66,22 @@ public class DrawTestImage {
 		parent.ellipseMode(parent.CENTER);
 		
 		// Use the direction the C opens to figure out the coordinate constraints
-		// for the cut, keeping in mind that the cut will be 1/5 of a degree
+		// for the cut, keeping in mind that the cut will be 1/6 of a degree
+		// Note: By translating the origin from the upper-left corner to the middle, 
+		// y increases down and decreases up from the origin, so that the negative
+		// y values are at the top half of the image and the positive y values are at the bottom 
 		double xMin, xMax, yMin, yMax; 
 		switch(dir) {
-			case UP: xMin = -1/5.0; xMax = 1/5.0; yMin = 1/5.0; yMax = 1; 
+			case UP: xMin = -CUT_SIZE; xMax = CUT_SIZE; yMin = -1; yMax = 0; 
 			break;
 			
-			case DOWN: xMin = -1/5.0; xMax = 1/5.0; yMin = -1; yMax = -1/5.0;
+			case DOWN: xMin = -CUT_SIZE; xMax = CUT_SIZE; yMin = 0; yMax = 1;
 			break;
 			
-			case LEFT: xMin = -1; xMax = -1/5.0; yMin = -1/5.0; yMax = 1/5.0;
+			case LEFT: xMin = -1; xMax = 0; yMin = -CUT_SIZE; yMax = CUT_SIZE;
 			break;
 			
-			case RIGHT: xMin = 1/5.0; xMax = 1; yMin = -1/5.0; yMax = 1/5.0; 
+			case RIGHT: xMin = 0; xMax = 1; yMin = -CUT_SIZE; yMax = CUT_SIZE; 
 			break;
 			
 			default: xMin = 0; xMax = 0; yMin = 0; yMax = 0;
@@ -91,7 +95,7 @@ public class DrawTestImage {
 			double d = Math.sqrt(c.x*c.x + c.y*c.y);
 			int index;
 			// Inner and outer rings should be the center color
-			if (d > 3/5.0 || d < 1/5.0) {
+			if (d > 2/3.0 || d < 1/3.0) {
 				index = (int)(Math.random()*center.length);
 				parent.fill(center[index]);
 			// The cut of the C should be the center color
