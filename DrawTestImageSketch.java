@@ -47,7 +47,7 @@ public class DrawTestImageSketch extends PApplet{
 		
 		// Make a new test image and draw it for this applet using the two color arrays 
 		DrawTestImage dti = new DrawTestImage(this);
-		dti.drawTestImage(circles, center, test, DrawTestImage.Direction.RIGHT, 2.4, 1366, 0, 0.3048, 0);
+		dti.drawTestImage(circles, center, test, DrawTestImage.Direction.RIGHT, 2.4, 4481.6273);
 	}
 	
 	/**

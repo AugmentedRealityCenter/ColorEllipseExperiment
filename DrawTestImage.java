@@ -41,15 +41,12 @@ public class DrawTestImage {
 	* @param test An array of colors for the circles that make up the C 
 	* @param dir The direction for the cut in the C 
 	* @param distFromScreen The distance the observer is from the screen, in meters 
-	* @param pixWidth The width of the screen in pixels 
-	* @param pixHeight The height of the screen in pixels 
-	* @param mWidth The width of the screen in meters 
-	* @param mHeight The height of the screen in meters 
+	* @param pixelsPerMeter The number of pixels in one meter for this screen - take the width in pixels and divide it by the width in meters of the screen 
 	*/
-	public void drawTestImage(ArrayList<Circle> circles, int[] center, int[] test, Direction dir, double distFromScreen, int pixWidth, int pixHeight, double mWidth, double mHeight) {		
+	public void drawTestImage(ArrayList<Circle> circles, int[] center, int[] test, Direction dir, double distFromScreen, double pixelsPerMeter) {		
 		// To find the width of the image, we use a 2 degree field of view 
 		// Width in meters: distance observer is from the screen * tan(1 degree) 
-		int pixelsInOneDegree = (int)(distFromScreen*Math.tan(RADIANS_PER_DEGREE)*pixWidth/mWidth);
+		int pixelsInOneDegree = (int)(distFromScreen*Math.tan(RADIANS_PER_DEGREE)*pixelsPerMeter);
 		int imgWidthInPixels = 2*pixelsInOneDegree; 
 		parent.size(imgWidthInPixels, imgWidthInPixels);
 		
