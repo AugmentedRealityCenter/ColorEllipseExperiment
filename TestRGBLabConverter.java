@@ -7,12 +7,17 @@
 import java.util.Vector;
 public class TestRGBLabConverter {
 	public static void main(String[] args) {
+		
 		try {
-			Vector<String> list = RGBLabConverter.parseCSV("DisplayMeasurement\\dell_s2240m_matrices.csv");
+			/*Vector<String> list = RGBLabConverter.parseCSV("DisplayMeasurement\\dell_s2240m_matrices.csv");
 			System.out.println(list.size());
 			for(String s : list) {
-				System.out.print(s + ", ");
-			}
+				System.out.println(s);
+			}*/
+			
+			RGBLabConverter converter = new RGBLabConverter("DisplayMeasurement\\dell_s2240m_matrices.csv");
+			converter.RGBToLab(65793);
+			converter.LabToRGB(null);
 		} catch(Exception e) {
 			System.out.println("Try again - you can do it!");
 			System.out.println(e);
