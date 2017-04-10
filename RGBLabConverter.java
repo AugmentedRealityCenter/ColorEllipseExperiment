@@ -30,7 +30,10 @@ public class RGBLabConverter {
 	* Converts a color in the CIEL*a*b* color space to an equivalent RGB color
 	*/
 	public int LabToRGB(Vector<Double> lab) {
-		XYZToRGB(null);
+		Vector<Double> ret = XYZToRGB(lab);
+		for(Double d : ret) {
+			System.out.println(d);
+		}
 		return 0;
 	}
 	
@@ -147,7 +150,7 @@ public class RGBLabConverter {
 	* @param xyz The XYZ color to convert
 	* @return The RGB color that corresponds to the given XYZ color 
 	*/
-	private int XYZToRGB(Vector<Double> xyz) {
+	private Vector<Double> XYZToRGB(Vector<Double> xyz) {
 		// Get the actual, numerical matrix from the parsed file
 		// since it will still have the String labels 
 		Vector<Double> xyzTorgb = new Vector<Double>();
@@ -159,12 +162,10 @@ public class RGBLabConverter {
 				xyzTorgb.add(Double.parseDouble(s));
 			}
 		}
+		//Multiply the matrix by the xyz vector to get the rgb colors
+		Vector<Double> rgbVector = multiply(xyzTorgb, xyz, 3, 3);
 		
-		for(Double d : xyzTorgb) {
-			System.out.println(d);
-		}
-		
-		return 0;
+		return rgbVector;
 	}
 	
 	/**

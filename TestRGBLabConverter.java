@@ -17,7 +17,11 @@ public class TestRGBLabConverter {
 			
 			RGBLabConverter converter = new RGBLabConverter("DisplayMeasurement\\dell_s2240m_matrices.csv");
 			converter.RGBToLab(65793);
-			converter.LabToRGB(null);
+			Vector<Double> test = new Vector<Double>();
+			test.add(70.0);
+			test.add(40.0);
+			test.add(50.0);
+			converter.LabToRGB(test);
 		} catch(Exception e) {
 			System.out.println("Try again - you can do it!");
 			System.out.println(e);
