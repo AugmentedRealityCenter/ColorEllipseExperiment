@@ -194,6 +194,9 @@ public class RGBLabConverter {
 	* equivalent color in CIEL*a*b* using formulas from
 	* https://en.wikipedia.org/wiki/Lab_color_space
 	* 
+	* Expected vector format: <x, y, z>
+	* Return vector format: <L*, a*, b*> 
+	* 
 	* @param xyz A vector representation of the CIEXYZ color to convert 
 	* @return A vector representing the L*a*b* color euqivalent to the given CIEXYZ color 
 	*/
@@ -212,11 +215,20 @@ public class RGBLabConverter {
 	* an equivalent color in CIEXYZ using formulas from
 	* https://en.wikipedia.org/wiki/Lab_color_space 
 	* 
+	* Expected vector format: <L*, a*, b*>
+	* Returns vector <x, y, z> 
+	* 
 	* @param lab A vector representation of the CIEL*a*b* color to convert 
 	* @return A vector representing the CIEXYZ color equivalent to the given CIEL*a*b*color 
 	*/
 	private Vector<Double> LabToXYZ(Vector<Double> lab) {
-		return null;
+		Vector<Double> xyz = new Vector<Double>();
+		double fraction = (lab.get(0) + 16) / 116.0;
+		
+		xyz.add(whitePoint.get(0) * fInverse(fraction + lab.get(1)/500.0));
+		xyz.add(whitePoint.get(1) * fInverse(fraction));
+		xyz.add(whitePoint.get(2) * fInverse(fraction - lab.get(2)/200.0));
+		return xyz; 
 	}
 		
 	/**
@@ -233,6 +245,23 @@ public class RGBLabConverter {
 			return Math.cbrt(x);
 		} else {
 			return x/(3*delta*delta) + 4.0/29.0;
+		}
+	}
+	
+	/**
+	* Function used in the conversion of CIEL*a*b* to CIEXYZ
+	* From https://en.wikipedia.org/wiki/Lab_color_space
+	* f(x) = x^3 if x > delta 
+	*           3*delta^2 (x - 4/29) otherwise 
+	* 
+	* @param x The input value 
+	* @return The output corresponding to the piecewise function 
+	*/ 
+	private double fInverse(double x) {
+		if(x > delta) {
+			return x * x * x;
+		} else {
+			return 3 * delta * delta * (x - 4.0/29.0); 
 		}
 	}
 }
