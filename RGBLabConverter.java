@@ -10,9 +10,18 @@ import java.io.FileNotFoundException;
 public class RGBLabConverter {
 	
 	private Vector<String> matrices;
+	private Vector<Double> whitePoint;
+	private final double delta = 6.0/29.0;
 	
-	public RGBLabConverter(String matrixFile) throws FileNotFoundException {
+	/**
+	* Constructor
+	* 
+	* @param matrixFile The name of the CSV file containing the RGB-XYZ matrices 
+	* @param whitePoint A vector representing the XYZ values for the white point (typically D65) to use in conversions 
+	*/ 
+	public RGBLabConverter(String matrixFile, Vector<Double> whitePoint) throws FileNotFoundException {
 		this.matrices = parseCSV(matrixFile);
+		this.whitePoint = whitePoint;
 	}
 	
 	/**
@@ -189,7 +198,13 @@ public class RGBLabConverter {
 	* @return A vector representing the L*a*b* color euqivalent to the given CIEXYZ color 
 	*/
 	private Vector<Double> XYZToLab(Vector<Double> xyz) {
-		return null;
+		Vector<Double> lab = new Vector<Double>();
+		double yOverYn = xyz.get(1) / whitePoint.get(1);
+		
+		lab.add(116 * f(yOverYn) - 16);
+		lab.add(500 * (f(xyz.get(0) / whitePoint.get(0)) - f(yOverYn)));
+		lab.add(200 * (f(yOverYn) - f(xyz.get(2) / whitePoint.get(2))));
+		return lab; 
 	}
 	
 	/**
@@ -203,5 +218,21 @@ public class RGBLabConverter {
 	private Vector<Double> LabToXYZ(Vector<Double> lab) {
 		return null;
 	}
-	
+		
+	/**
+	* Function used in the conversion of CIEXYZ to CIEL*a*b* 
+	* From https://en.wikipedia.org/wiki/Lab_color_space
+	* f(x) = cube root of x if x > delta^3 
+	*           t/3*delta^2 + 4/29 otherwise 
+	* 
+	* @param x The input value 
+	* @return The output corresponding to the piecewise function 
+	*/ 
+	private double f(double x) {
+		if(x > Math.pow(delta, 3)) {
+			return Math.cbrt(x);
+		} else {
+			return x/(3*delta*delta) + 4.0/29.0;
+		}
+	}
 }
