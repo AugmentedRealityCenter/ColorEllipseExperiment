@@ -31,7 +31,13 @@ public class RGBLabConverter {
 	* @return A vector of doubles that represent the L*a*b* color equivalent to the given RGB color 
 	*/
 	public Vector<Double> RGBToLab(int rgbColor) {
-		Vector<Double> ret = RGBToXYZ(rgbColor);
+		// First we need to convert the color into a vector 
+		Vector<Double> rgbVector = new Vector<Double>();
+		rgbVector.add((double)(rgbColor >> 16 & 0xFF));
+		rgbVector.add((double)(rgbColor >> 8 & 0xFF));
+		rgbVector.add((double)(rgbColor & 0xFF));
+		
+		Vector<Double> ret = RGBToXYZ(rgbVector); 
 		for(Double d : ret) {
 			System.out.println(d);
 		}
@@ -140,7 +146,7 @@ public class RGBLabConverter {
 	* @param rgb The RGB color to convert 
 	* @return A Vector representing the X, Y, and Z values for this RGB color 
 	*/
-	private Vector<Double> RGBToXYZ(int rgb) {
+	private Vector<Double> RGBToXYZ(Vector<Double> rgbVector) {
 		// Get the actual, numerical matrix from the parsed file
 		// since it will still have the String labels 
 		Vector<Double> rgbToxyz = new Vector<Double>();
@@ -155,12 +161,6 @@ public class RGBLabConverter {
 		}
 		
 		// Multiply the RGB vector by the matrix to get the XYZ values
-		// First we need to convert the color into a vector 
-		Vector<Double> rgbVector = new Vector<Double>();
-		rgbVector.add((double)(rgb >> 16 & 0xFF));
-		rgbVector.add((double)(rgb >> 8 & 0xFF));
-		rgbVector.add((double)(rgb & 0xFF));
-		
 		return  multiply(rgbToxyz, rgbVector, 3, 3);
 	}
 	
