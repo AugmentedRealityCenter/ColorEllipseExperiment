@@ -17,6 +17,9 @@ public class RGBLabConverter {
 	
 	/**
 	* Converts an RGB color to an equivalent color in the CIEL*a*b* color space 
+	* 
+	* @param rgbColor The integer representation of the device-specific, gamma-compressed RGB color to convert
+	* @return A vector of doubles that represent the L*a*b* color equivalent to the given RGB color 
 	*/
 	public Vector<Double> RGBToLab(int rgbColor) {
 		Vector<Double> ret = RGBToXYZ(rgbColor);
@@ -28,6 +31,9 @@ public class RGBLabConverter {
 	
 	/**
 	* Converts a color in the CIEL*a*b* color space to an equivalent RGB color
+	* 
+	* @param lab The L*a*b* color to convert
+	* @return The device-specific, gamma-compressed RGB color equivalent to the given L*a*b* color 
 	*/
 	public int LabToRGB(Vector<Double> lab) {
 		Vector<Double> ret = XYZToRGB(lab);
@@ -77,7 +83,7 @@ public class RGBLabConverter {
 	* @param a The one-dimensional Vector representing the matrix to mulitply 
 	* @param x The scalar vector to multiply by the matrix
 	* @param m The number of rows in the matrix
-	* @param n The number of columns
+	* @param n The number of columns in the matrix 
 	* @return A Vector that is the product of the matrix and vector 
 	*/
     public static Vector<Double> multiply(Vector<Double> a, Vector<Double> x, int m, int n) {
@@ -96,20 +102,26 @@ public class RGBLabConverter {
 	
 	/**
 	* Converts a device-specific, gamma-compressed RGB color to an 
-	* equivalent device-specific, linear RGB color using device readings
-	* from a given CSV file 
+	* equivalent device-specific, linear RGB color using the formulas 
+	* described in https://en.wikipedia.org/wiki/SRGB 
+	* 
+	* @param compRGB A vector representing the device-specific, gamma-compressed RGB color to convert 
+	* @return A vector representing the equivalent linear RGB color 
 	*/
-	private void compressedRGBToLinearRGB(int compRGB) {
-		
+	private Vector<Double> compressedRGBToLinearRGB(Vector<Double> compRGB) {
+		return null;
 	}
 	
 	/**
 	* Converts device-specific linear RGB color to an equivalent
-	* gamma-compressed, device-specific RGB color using device
-	* readings from given CSV file
+	* gamma-compressed, device-specific RGB color using the formulas
+	* described in https://en.wikipedia.org/wiki/SRGB
+	* 
+	* @param linRGB A vector representing the linear RGB color to convert
+	* @return A vector representation of the equivalent device-specific, gamma-compressed RGB color 
 	*/
-	private int linearRGBToCompressedRGB() {
-		return 0;
+	private Vector<Double> linearRGBToCompressedRGB(Vector<Double> linRGB) {
+		return null;
 	}
 	
 	/**
@@ -172,8 +184,11 @@ public class RGBLabConverter {
 	* Converts a color in the CIEXYZ color space to an
 	* equivalent color in CIEL*a*b* using formulas from
 	* https://en.wikipedia.org/wiki/Lab_color_space
+	* 
+	* @param xyz A vector representation of the CIEXYZ color to convert 
+	* @return A vector representing the L*a*b* color euqivalent to the given CIEXYZ color 
 	*/
-	private Vector<Double> XYZToLab() {
+	private Vector<Double> XYZToLab(Vector<Double> xyz) {
 		return null;
 	}
 	
@@ -181,9 +196,12 @@ public class RGBLabConverter {
 	* Converts a color in the CIEL*a*b* color space to
 	* an equivalent color in CIEXYZ using formulas from
 	* https://en.wikipedia.org/wiki/Lab_color_space 
+	* 
+	* @param lab A vector representation of the CIEL*a*b* color to convert 
+	* @return A vector representing the CIEXYZ color equivalent to the given CIEL*a*b*color 
 	*/
-	private void LabToXYZ(Vector<Double> lab) {
-		
+	private Vector<Double> LabToXYZ(Vector<Double> lab) {
+		return null;
 	}
 	
 }
