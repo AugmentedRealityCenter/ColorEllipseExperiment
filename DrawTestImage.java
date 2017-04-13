@@ -31,7 +31,7 @@ public class DrawTestImage {
 	
 	/**
 	* Takes in a list of circles, a list of center colors, a list of test colors, a direction for the opening in the C,
-	* the distance the observer is from the screen, and the dimensions of the screen in pixels and meters. 
+	* the distance the observer is from the screen, and the number of pixels per meter for the display. 
 	* Draws a circle made of smaller circles, with a C made of different colored circles. 
 	* The cut of the C can face up, down, left, or right and is 1/6 of a degree when viewed at the 
 	* specified distance. The overall image is 2 degrees wide when viewed at the specified distance. 
