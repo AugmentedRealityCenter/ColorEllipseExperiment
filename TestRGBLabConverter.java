@@ -18,7 +18,7 @@ public class TestRGBLabConverter {
 			D65.add(95.047);
 			D65.add(100.0);
 			D65.add(108.883);
-			RGBLabConverter converter = new RGBLabConverter("DisplayMeasurement\\dell_s2240m_matrices.csv", D65);
+			RGBLabConverter converter = new RGBLabConverter("DisplayMeasurement\\dell_s2240m_matrices.csv", "DisplayMeasurement\\model.csv", D65);
 			converter.RGBToLab(65793);
 			Vector<Double> test = new Vector<Double>();
 			test.add(70.0);

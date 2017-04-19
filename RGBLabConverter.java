@@ -10,6 +10,7 @@ import java.io.FileNotFoundException;
 public class RGBLabConverter {
 	
 	private Vector<String> matrices;
+	private Vector<String> rgbModelValues;
 	private Vector<Double> whitePoint;
 	private final double delta = 6.0/29.0;
 	
@@ -19,8 +20,9 @@ public class RGBLabConverter {
 	* @param matrixFile The name of the CSV file containing the RGB-XYZ matrices 
 	* @param whitePoint A vector representing the XYZ values for the white point (typically D65) to use in conversions 
 	*/ 
-	public RGBLabConverter(String matrixFile, Vector<Double> whitePoint) throws FileNotFoundException {
+	public RGBLabConverter(String matrixFile, String modelFile, Vector<Double> whitePoint) throws FileNotFoundException {
 		this.matrices = parseCSV(matrixFile);
+		this.rgbModelValues = parseCSV(modelFile);
 		this.whitePoint = whitePoint;
 	}
 	
@@ -37,9 +39,15 @@ public class RGBLabConverter {
 		rgbVector.add((double)(rgbColor >> 8 & 0xFF));
 		rgbVector.add((double)(rgbColor & 0xFF));
 		
+		// Compressed RGB to Linear RGB
+		Vector<Double> uncompress = compressedRGBToLinearRGB(rgbVector);
+		for(Double d : uncompress) {
+			System.out.println("Uncompressed value: " + d);
+		}
+		
 		Vector<Double> ret = RGBToXYZ(rgbVector); 
 		for(Double d : ret) {
-			System.out.println(d);
+			System.out.println("RGB to XYZ: " + d);
 		}
 		return null;
 	}
@@ -53,7 +61,12 @@ public class RGBLabConverter {
 	public int LabToRGB(Vector<Double> lab) {
 		Vector<Double> ret = XYZToRGB(lab);
 		for(Double d : ret) {
-			System.out.println(d);
+			System.out.println("XYZ to RGB: " + d);
+		}
+		
+		Vector<Double> compressed = linearRGBToCompressedRGB(lab);
+		for(Double d : ret) {
+			System.out.println("Compressed value: " + d); 
 		}
 		return 0;
 	}
@@ -69,7 +82,7 @@ public class RGBLabConverter {
 	public static Vector<String> parseCSV(String file) throws FileNotFoundException{
 		Scanner in = new Scanner(new File(file));
 		// Split on commas or whitespace (such as \n)  
-		in.useDelimiter(",|\\s+");
+		in.useDelimiter(",|\\n+");
 		Vector<String> list = new Vector<String>();
 		while(in.hasNext()) {
 			list.add(in.next().trim());
@@ -124,7 +137,26 @@ public class RGBLabConverter {
 	* @return A vector representing the equivalent linear RGB color 
 	*/
 	private Vector<Double> compressedRGBToLinearRGB(Vector<Double> compRGB) {
-		return null;
+		// Ignore the labels in the rgbModelValues vector 
+		Vector<Double> linear = new Vector<Double>();
+		double gamma = Double.parseDouble(rgbModelValues.get(1));
+		linear.add(uncompress(compRGB.get(0), gamma, Double.parseDouble(rgbModelValues.get(3))));
+		linear.add(uncompress(compRGB.get(1), gamma, Double.parseDouble(rgbModelValues.get(5))));
+		linear.add(uncompress(compRGB.get(2), gamma, Double.parseDouble(rgbModelValues.get(7))));	
+		return linear;
+	}
+	
+	/**
+	* Takes a compressed RGB value from a color channel (red, green, or blue) and 
+	* uncompresses it according to the model lowerLimit+(1-lowerLimit)*POW(value,gamma)
+	* 
+	* @param value The value of the gamma-compressed color channel to convert
+	* @param gamma The value of gamma
+	* @param lowerLimit The lower limit (correction) based on the data for a given monitor 
+	* @return The uncompressed (linear RGB) value of the given compressed RGB value 
+	*/
+	private double uncompress(double value, double gamma, double lowerLimit) {
+		return lowerLimit + (1-lowerLimit)*Math.pow(value, gamma);
 	}
 	
 	/**
@@ -136,7 +168,28 @@ public class RGBLabConverter {
 	* @return A vector representation of the equivalent device-specific, gamma-compressed RGB color 
 	*/
 	private Vector<Double> linearRGBToCompressedRGB(Vector<Double> linRGB) {
-		return null;
+		// Ignore the labels in the rgbModelValues vector 
+		Vector<Double> compressed = new Vector<Double>();
+		double gamma = Double.parseDouble(rgbModelValues.get(1));
+		compressed.add(compress(linRGB.get(0), gamma, Double.parseDouble(rgbModelValues.get(3))));
+		compressed.add(uncompress(linRGB.get(1), gamma, Double.parseDouble(rgbModelValues.get(5))));
+		compressed.add(uncompress(linRGB.get(2), gamma, Double.parseDouble(rgbModelValues.get(7))));	
+		return compressed;
+	}
+	
+	/**
+	* Converts a linear RGB value for a specific color channel (red, green, or blue) 
+	* to a gamma-compressed, device-specific RGB value based on a value of
+	* gamma and a lower limit (the lowest value in the data for a given display).
+	* Uses the model: POWER((value-lowerLimit)/(1-lowerLimit), 1/gamma)
+	* 
+	* @param value The value of the linear RGB color channel to compress 
+	* @param gamme The value of gamma
+	* @param lowerLimit The value of the lower limit (correction) based on display data 
+	* @return The gamma-compressed value of the given linear RGB value 
+	*/
+	private double compress(double value, double gamma, double lowerLimit) {
+		return Math.pow((value - lowerLimit)/(1-lowerLimit), 1/gamma);
 	}
 	
 	/**
