@@ -1,4 +1,10 @@
 /**
+* Converts gamma-compressed, device-specific RGB colors to equivalent CIEL*a*b* colors
+* and vice versa. It requires a CSV file containing the matrices for converting XYZ to RGB and
+* vice versa, as well as a CSV file containing the gamma value and lower limits for each color
+* channel for use when converting compressed RGB to linear RGB and vice versa. The lower
+* limit is meant to correct for the fact that device readings usually do not reach 0 when 
+* measuring color. 
 * 
 * @author Caroline Danzi
 * @version 2017-04-02
@@ -18,6 +24,7 @@ public class RGBLabConverter {
 	* Constructor
 	* 
 	* @param matrixFile The name of the CSV file containing the RGB-XYZ matrices 
+	* @param modelFile The name of the CSV file containing the gamma value and lower limits for each color channel
 	* @param whitePoint A vector representing the XYZ values for the white point (typically D65) to use in conversions 
 	*/ 
 	public RGBLabConverter(String matrixFile, String modelFile, Vector<Double> whitePoint) throws FileNotFoundException {
@@ -40,16 +47,20 @@ public class RGBLabConverter {
 		rgbVector.add((double)(rgbColor & 0xFF));
 		
 		// Compressed RGB to Linear RGB
-		Vector<Double> uncompress = compressedRGBToLinearRGB(rgbVector);
-		for(Double d : uncompress) {
+		Vector<Double> uncompressed = compressedRGBToLinearRGB(rgbVector);
+		for(Double d : uncompressed) {
 			System.out.println("Uncompressed value: " + d);
 		}
 		
-		Vector<Double> ret = RGBToXYZ(rgbVector); 
-		for(Double d : ret) {
+		// Linear RGB to CIEXYZ 		
+		Vector<Double> xyz = RGBToXYZ(uncompressed); 
+		for(Double d : xyz) {
 			System.out.println("RGB to XYZ: " + d);
 		}
-		return null;
+		
+		// CIEXYZ to CIEL*a*b* 
+		Vector<Double> lab = XYZToLab(xyz);
+		return lab;
 	}
 	
 	/**
@@ -59,74 +70,28 @@ public class RGBLabConverter {
 	* @return The device-specific, gamma-compressed RGB color equivalent to the given L*a*b* color 
 	*/
 	public int LabToRGB(Vector<Double> lab) {
-		Vector<Double> ret = XYZToRGB(lab);
-		for(Double d : ret) {
+		// Lab to XYZ
+		Vector<Double> xyz = LabToXYZ(lab);
+		for(Double d : xyz) {
+			System.out.println("Lab to XYZ: " + d);
+		}
+		
+		// XYZ to linear RGB 
+		Vector<Double> rgb = XYZToRGB(xyz);
+		for(Double d : rgb) {
 			System.out.println("XYZ to RGB: " + d);
 		}
 		
-		Vector<Double> compressed = linearRGBToCompressedRGB(lab);
-		for(Double d : ret) {
+		// Linear RGB to gamma-compressed RGB 
+		Vector<Double> compressed = linearRGBToCompressedRGB(rgb);
+		for(Double d : compressed) {
 			System.out.println("Compressed value: " + d); 
 		}
-		return 0;
+		
+		// Change each double to an int and return an individual int 
+		// TODO: intValue() only truncates; it does not round 
+		return (compressed.get(0).intValue() << 16) | (compressed.get(1).intValue() << 8) | compressed.get(2).intValue(); 
 	}
-	
-	/**
-	* Reads in a CSV file and returns a Vector representation of its contents. It will
-	* split the contents based on commas and whitespace and will trim white space off each element
-	* before adding it to the Vector. 
-	* 
-	* @param file The name of the CSV file
-	* @return A Vector<String> representing the contents of the CSV file
-	*/
-	public static Vector<String> parseCSV(String file) throws FileNotFoundException{
-		Scanner in = new Scanner(new File(file));
-		// Split on commas or whitespace (such as \n)  
-		in.useDelimiter(",|\\n+");
-		Vector<String> list = new Vector<String>();
-		while(in.hasNext()) {
-			list.add(in.next().trim());
-		}
-		in.close();
-		return list;
-	}
-	
-	/**
-	* Checks to see if a String represents a number
-	* Help from http://stackoverflow.com/questions/1102891/how-to-check-if-a-string-is-numeric-in-java
-	* 
-	* @param The String to check 
-	* @return true if the String could be parsed to a number, false otherwise
-	*/
-	private boolean isNumeric(String s) {
-		return s.matches("-?\\d+(\\.\\d+)?");
-	}
-	
-	/**
-	* Matrix-vector multiplication (y = A * x). It takes in a one-dimensional Vector
-	* to represent the matrix to multiply. It uses the number of rows and columns
-	* (given as parameters) to determine the dimensions of the matrix. 
-	* Adapted from http://introcs.cs.princeton.edu/java/22library/Matrix.java.html
-	* 
-	* @param a The one-dimensional Vector representing the matrix to mulitply 
-	* @param x The scalar vector to multiply by the matrix
-	* @param m The number of rows in the matrix
-	* @param n The number of columns in the matrix 
-	* @return A Vector that is the product of the matrix and vector 
-	*/
-    public static Vector<Double> multiply(Vector<Double> a, Vector<Double> x, int m, int n) {
-        if (x.size() != n) throw new RuntimeException("Illegal matrix dimensions.");
-        Vector<Double> y = new Vector<Double>();
-		double sum = 0;
-        for (int i = 0; i < m; i++) {
-            for (int j = 0; j < n; j++) {
-                sum += a.get(m*i + j) * x.get(j);
-			}
-			y.add(sum);
-			sum = 0;
-		}
-        return y;
-    }
 	
 	/**
 	* Converts a device-specific, gamma-compressed RGB color to an 
@@ -156,7 +121,7 @@ public class RGBLabConverter {
 	* @return The uncompressed (linear RGB) value of the given compressed RGB value 
 	*/
 	private double uncompress(double value, double gamma, double lowerLimit) {
-		return lowerLimit + (1-lowerLimit)*Math.pow(value, gamma);
+		return lowerLimit + (1-lowerLimit)*Math.pow(value/255, gamma);
 	}
 	
 	/**
@@ -186,10 +151,10 @@ public class RGBLabConverter {
 	* @param value The value of the linear RGB color channel to compress 
 	* @param gamme The value of gamma
 	* @param lowerLimit The value of the lower limit (correction) based on display data 
-	* @return The gamma-compressed value of the given linear RGB value 
+	* @return The gamma-compressed value of the given linear RGB value in the range [0,255] 
 	*/
 	private double compress(double value, double gamma, double lowerLimit) {
-		return Math.pow((value - lowerLimit)/(1-lowerLimit), 1/gamma);
+		return 255*constrain(Math.pow((value - lowerLimit)/(1-lowerLimit), 1/gamma), 0, 1);
 	}
 	
 	/**
@@ -238,7 +203,10 @@ public class RGBLabConverter {
 		}
 		//Multiply the matrix by the xyz vector to get the rgb colors
 		Vector<Double> rgbVector = multiply(xyzTorgb, xyz, 3, 3);
-		
+		for(int i = 0; i < rgbVector.size(); i++) {
+			// Linear RGB should be in the range [0,1] 
+			rgbVector.set(i, constrain(rgbVector.get(i), 0, 1));
+		}
 		return rgbVector;
 	}
 	
@@ -317,4 +285,74 @@ public class RGBLabConverter {
 			return 3 * delta * delta * (x - 4.0/29.0); 
 		}
 	}
+	
+	/**
+	* Ensures that a value falls in a range given by min and max.
+	* Help from http://stackoverflow.com/questions/17933493/java-limit-number-between-min-and-max 
+	* 
+	* @param value The value on which to do the range check
+	* @param min The lowest valid value in the range 
+	* @param max The highest valid value in the range, inclusive
+	* @return The value if it falls within the range; min if the value is less than min; max if the value is greater than max
+	*/
+	private double constrain(double value, double min, double max) {
+		return Math.min(Math.max(min, value), max);
+	}
+	
+	/**
+	* Reads in a CSV file and returns a Vector representation of its contents. It will
+	* split the contents based on commas and whitespace and will trim white space off each element
+	* before adding it to the Vector. 
+	* 
+	* @param file The name of the CSV file
+	* @return A Vector<String> representing the contents of the CSV file
+	*/
+	private Vector<String> parseCSV(String file) throws FileNotFoundException{
+		Scanner in = new Scanner(new File(file));
+		// Split on commas or whitespace (such as \n)  
+		in.useDelimiter(",|\\n+");
+		Vector<String> list = new Vector<String>();
+		while(in.hasNext()) {
+			list.add(in.next().trim());
+		}
+		in.close();
+		return list;
+	}
+	
+	/**
+	* Checks to see if a String represents a number
+	* Help from http://stackoverflow.com/questions/1102891/how-to-check-if-a-string-is-numeric-in-java
+	* 
+	* @param The String to check 
+	* @return true if the String could be parsed to a number, false otherwise
+	*/
+	private boolean isNumeric(String s) {
+		return s.matches("-?\\d+(\\.\\d+)?");
+	}
+	
+	/**
+	* Matrix-vector multiplication (y = A * x). It takes in a one-dimensional Vector
+	* to represent the matrix to multiply. It uses the number of rows and columns
+	* (given as parameters) to determine the dimensions of the matrix. 
+	* Adapted from http://introcs.cs.princeton.edu/java/22library/Matrix.java.html
+	* 
+	* @param a The one-dimensional Vector representing the matrix to mulitply 
+	* @param x The scalar vector to multiply by the matrix
+	* @param m The number of rows in the matrix
+	* @param n The number of columns in the matrix 
+	* @return A Vector that is the product of the matrix and vector 
+	*/
+    private static Vector<Double> multiply(Vector<Double> a, Vector<Double> x, int m, int n) {
+        if (x.size() != n) throw new RuntimeException("Illegal matrix dimensions.");
+        Vector<Double> y = new Vector<Double>();
+		double sum = 0;
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                sum += a.get(m*i + j) * x.get(j);
+			}
+			y.add(sum);
+			sum = 0;
+		}
+        return y;
+    }
 }

@@ -41,7 +41,8 @@ public class TestRGBLabConverter {
 			test.add(in.nextDouble());
 			System.out.print("b: ");
 			test.add(in.nextDouble());
-			System.out.println("Resulting rgb: " + converter.LabToRGB(test));
+			int ret = converter.LabToRGB(test);
+			System.out.println("Resulting rgb: " + ret + "(R: " + (ret >> 16) + "; G: " + (ret >> 8 & 0xFF) + "; B: " + (ret & 0xFF) + ")");
 			
 		} catch(Exception e) {
 			System.out.println("Try again - you can do it!");
