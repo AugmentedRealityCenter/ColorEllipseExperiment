@@ -7,6 +7,7 @@
 */
 import java.util.Vector;
 import java.util.Scanner;
+import java.io.File;
 public class TestRGBLabConverter {
 	public static void main(String[] args) {
 		Scanner in = new Scanner(System.in);
@@ -23,7 +24,7 @@ public class TestRGBLabConverter {
 			D65.add(55.729080359);
 			
 			// Create the color converter using the matrices and model loaded from files 
-			RGBLabConverter converter = new RGBLabConverter("DisplayMeasurement\\dell_s2240m_matrices.csv", "DisplayMeasurement\\model.csv", D65);
+			RGBLabConverter converter = new RGBLabConverter("DisplayMeasurement" + File.separator + "dell_s2240m_matrices.csv", "DisplayMeasurement" + File.separator + "model.csv", D65);
 			
 			// Convert an RGB color to lab 
 			System.out.println("Converting RGB to Lab");
