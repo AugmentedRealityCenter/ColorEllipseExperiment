@@ -137,8 +137,8 @@ public class RGBLabConverter {
 		Vector<Double> compressed = new Vector<Double>();
 		double gamma = Double.parseDouble(rgbModelValues.get(1));
 		compressed.add(compress(linRGB.get(0), gamma, Double.parseDouble(rgbModelValues.get(3))));
-		compressed.add(uncompress(linRGB.get(1), gamma, Double.parseDouble(rgbModelValues.get(5))));
-		compressed.add(uncompress(linRGB.get(2), gamma, Double.parseDouble(rgbModelValues.get(7))));	
+		compressed.add(compress(linRGB.get(1), gamma, Double.parseDouble(rgbModelValues.get(5))));
+		compressed.add(compress(linRGB.get(2), gamma, Double.parseDouble(rgbModelValues.get(7))));	
 		return compressed;
 	}
 	
