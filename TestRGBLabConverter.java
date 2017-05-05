@@ -13,9 +13,14 @@ public class TestRGBLabConverter {
 		try {
 			// Set the white point 
 			Vector<Double> D65 = new Vector<Double>();
-			D65.add(95.047);
+			/*D65.add(95.047);
 			D65.add(100.0);
-			D65.add(108.883);
+			D65.add(108.883);*/
+			// White point found by multiplying the RGB to XYZ matrix provided 
+			// by <1.0, 1.0, 1.0> 
+			D65.add(25.376467605);
+			D65.add(52.603498246);
+			D65.add(55.729080359);
 			
 			// Create the color converter using the matrices and model loaded from files 
 			RGBLabConverter converter = new RGBLabConverter("DisplayMeasurement\\dell_s2240m_matrices.csv", "DisplayMeasurement\\model.csv", D65);
