@@ -348,7 +348,7 @@ public class RGBLabConverter {
 		double sum = 0;
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
-                sum += a.get(m*i + j) * x.get(j);
+                sum += a.get(i + m*j) * x.get(j);
 			}
 			y.add(sum);
 			sum = 0;
