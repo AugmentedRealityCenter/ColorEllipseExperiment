@@ -12,6 +12,8 @@ public class StaircaseManagerTester {
 		int direction = in.nextInt();
 		boolean increase = direction == 1 ? true : false;
 		StaircaseManager s = new StaircaseManager(start, step, increase);
+		
+		System.out.println("Enter 't' if the test subject responded correctly; 'f' if they responded incorrectly, and 'q' to quit");
 		String test;
 		
 		while(!s.thresholdReached()) {
