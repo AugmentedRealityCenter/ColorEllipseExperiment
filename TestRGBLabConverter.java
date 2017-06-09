@@ -19,9 +19,9 @@ public class TestRGBLabConverter {
 			D65.add(108.883);*/
 			// White point found by multiplying the RGB to XYZ matrix provided 
 			// by <1.0, 1.0, 1.0> 
-			D65.add(25.376467605);
-			D65.add(52.603498246);
-			D65.add(55.729080359);
+			D65.add(40.51067005);
+			D65.add(42.62172404);
+			D65.add(46.40781179);
 			
 			// Create the color converter using the matrices and model loaded from files 
 			RGBLabConverter converter = new RGBLabConverter("DisplayMeasurement" + File.separator + "dell_s2240m_matrices.csv", "DisplayMeasurement" + File.separator + "model.csv", D65);
